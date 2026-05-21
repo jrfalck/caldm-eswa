@@ -1,3 +1,0 @@
-dataset,reason
-15_Hepatitis,too few rows (80 < 100)
-34_smtp,degenerate outlier rate (0.0003)
