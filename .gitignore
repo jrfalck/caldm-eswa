@@ -1,0 +1,12 @@
+# Data files — too large for GitHub
+data/final_data_subsetFLGAAL8.npz
+data/adbench/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environments
+*.env
+deep2-env/
