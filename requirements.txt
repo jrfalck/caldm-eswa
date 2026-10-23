@@ -1,0 +1,10 @@
+# Versions used to produce the results in the paper (Python 3.8.17, CUDA 11.8)
+torch==2.2.1
+numpy==1.24.4
+pandas==2.0.3
+scikit-learn==1.3.0
+scipy==1.10.1
+pyod==2.0.2
+matplotlib
+seaborn
+python-docx

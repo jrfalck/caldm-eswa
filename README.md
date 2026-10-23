@@ -1,174 +1,180 @@
 # CALDM: Context-Aware Latent Diffusion for Pay Anomaly Detection
 
-Reproducibility package for the paper:
+Reproducibility package for:
 
 > **CALDM: A Context-Aware Latent Diffusion Architecture for Pay Anomaly Detection in Tabular HR Data**
-> Juan R. Falck, Muhammad F. Islam — George Washington University
-> *Submitted to Expert Systems with Applications (ESWA)*
+> Juan R. Falck and Muhammad F. Islam, The George Washington University.
+> Submitted to *Expert Systems with Applications*.
+
+Every table in the paper can be regenerated from the scripts and data described here.
+Pre-computed results for all tables are included in `results/`.
 
 ---
 
-## Repository Structure
+## Repository structure
 
 ```
-caldm-eswa/
-├── scripts/
-│   ├── caldm_ablation_study_v3.py    # Tables 7 & 8 (BLS ablation)
-│   ├── caldm_ablation_adbench.py     # Table 9 (ADBench replication)
-│   └── caldm_benchmark.py            # Table 5 + Appendix A
-├── notebooks/
-│   ├── 02_ablation_study_bls.ipynb
-│   ├── 03_ablation_adbench_replication.ipynb
-│   └── 04_benchmark_comparison.ipynb
-├── results/
-│   ├── ablation_results_summary.csv  # Table 7
-│   ├── ablation_per_type.csv         # Table 8
-│   ├── ablation_results_raw.csv
-│   ├── bls_summary.csv               # Table 5
-│   ├── bls_per_run.csv
-│   ├── ablation_adbench/             # Table 9
-│   │   ├── adbench_summary.csv
-│   │   ├── adbench_per_run.csv
-│   │   └── adbench_per_dataset.csv
-│   └── appendix_a/                   # Appendix A
-│       ├── adbench_summary.csv
-│       ├── adbench_per_run.csv
-│       └── adbench_per_dataset.csv
-└── data/
-    └── README.md                     # Download instructions
+scripts/
+  caldm_ablation_study_v3.py          BLS ablation: model, training, scoring (Tables 5-6)
+  caldm_rerun_salary_free_context.py  Runs the BLS ablation with the salary-free context encoder
+                                      (Tables 5-6) and the rule-based references for Table 4
+  caldm_table5_consistent.py          CALDM-D and CALDM-J rows of Table 4 (BLS benchmark)
+  caldm_benchmark.py                  PyOD baselines for Table 4; ADBench benchmark (Appendix A)
+  caldm_ablation_adbench.py           ADBench ablation replication (Table 7)
+  caldm_reviewer_checks.py            Rule-based references for Tables 5-6; batch-sensitivity
+                                      check (Section 8.4)
+  caldm_dataset_property_analysis.py  Dataset-property analysis (Section 7.5)
+results/                              Pre-computed results (see table below)
+data/                                 Not tracked; place the datasets here (see Data)
+requirements.txt
 ```
 
----
+## Paper tables and where they come from
 
-## Reproducing Paper Results
+| Paper | Results folder or file | Produced by |
+|---|---|---|
+| Table 4, CALDM-D and CALDM-J rows | `results/bls_benchmark_consistent/` | `caldm_table5_consistent.py` |
+| Table 4, PyOD baseline rows | `results/bls_per_run.csv`, `results/bls_summary.csv` | `caldm_benchmark.py --target bls` |
+| Table 4, rule-based references | `results/bls_benchmark_salary_free_context/rule_baselines_*.csv` | `caldm_rerun_salary_free_context.py` (benchmark part) |
+| Tables 5 and 6 (BLS ablation) | `results/ablation_v5_salary_free_context/` | `caldm_rerun_salary_free_context.py` (ablation part) |
+| Tables 5 and 6, rule-based references | `results/reviewer_checks/reviewer_checks.csv` (check M1) | `caldm_reviewer_checks.py` |
+| Section 7.1, earlier context encoder with salary | `results/ablation_v4_paper_settings/` | `caldm_ablation_study_v3.py` (command below) |
+| Table 7 (ADBench ablation replication) | `results/ablation_adbench/` | `caldm_ablation_adbench.py` |
+| Section 7.5, dataset-property analysis | computed from `results/ablation_adbench/` | `caldm_dataset_property_analysis.py` |
+| Section 8.4, batch sensitivity | `results/reviewer_checks/reviewer_checks.csv` (check K) | `caldm_reviewer_checks.py` |
+| Appendix A, Table A.1 | `results/appendix_a/` | `caldm_benchmark.py --target adbench` |
 
-All pre-computed results are included in `results/`. To verify a table without
-re-running training, open the corresponding notebook and set `RUN_TRAINING = False`
-— the notebook will load the pre-computed CSVs and reproduce all tables and
-verification checks instantly, with no GPU required.
-
-To re-run training from scratch, set `RUN_TRAINING = True` and ensure the data
-files are in place (see **Data** section below).
-
-| Paper table | Notebook | Script | Est. GPU time |
-|---|---|---|---|
-| Tables 7 & 8 — BLS ablation | 02_ablation_study_bls | caldm_ablation_study_v3.py | ~4 hours |
-| Table 9 — ADBench replication | 03_ablation_adbench_replication | caldm_ablation_adbench.py | ~6 hours |
-| Table 5 — BLS benchmark | 04_benchmark_comparison | caldm_benchmark.py | ~2–3 hours |
-| Appendix A — ADBench benchmark | 04_benchmark_comparison | caldm_benchmark.py | ~8 hours |
+Notes:
+- `results/bls_per_run.csv` also contains CALDM-D and CALDM-J rows from the benchmark script's own
+  CALDM implementation. These rows are superseded by `results/bls_benchmark_consistent/`, which uses
+  the implementation described in Section 4 of the paper. Only the PyOD rows of that file are used.
+  For the same reason, `caldm_rerun_salary_free_context.py` also writes CALDM rows to
+  `results/bls_benchmark_salary_free_context/bls_per_run.csv`; only its `rule_baselines_*.csv` files
+  are used in the paper, and only those are included here.
+- On ADBench (Table 7 and Appendix A), CALDM uses a single-headed VAE and the context encoder
+  receives all features, as described in Section 4.2.
 
 ---
 
 ## Setup
 
-**Requirements:** Python 3.9+. A CUDA-capable GPU is recommended for training
-runs but is not required to verify pre-computed results.
+Results in the paper were produced with:
+
+| Component | Version |
+|---|---|
+| Python | 3.8.17 |
+| PyTorch | 2.2.1 (CUDA 11.8) |
+| NumPy | 1.24.4 |
+| pandas | 2.0.3 |
+| scikit-learn | 1.3.0 |
+| SciPy | 1.10.1 |
+| PyOD | 2.0.2 |
+| GPU | NVIDIA GeForce RTX 3070 Laptop GPU |
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**Tested environment:** Python 3.10, PyTorch 2.0, NVIDIA RTX-class GPU (16 GB VRAM),
-Windows 11 and Ubuntu 24.
+All scripts fix their random seeds and request deterministic cuDNN kernels. Runs on other GPUs or
+library versions can differ slightly (typically in the third decimal place).
 
 ---
 
 ## Data
 
-### BLS Compensation Dataset
+### BLS compensation dataset
 
-A synthetic compensation dataset derived from the U.S. Bureau of Labor Statistics
-Occupational Employment and Wage Statistics (OEWS) program. Individual records are
-generated from real BLS aggregate statistics using distribution-fitting across
-MSA × Occupation × Industry cells, with five rule-based labeled outlier types.
+Synthetic individual-level compensation records (596,856 rows) generated from U.S. Bureau of Labor
+Statistics OEWS wage percentiles for Florida, Alabama and Georgia, with five types of labeled pay
+outliers.
 
-**Download:** https://data.hrmatica.com/bls/final_data_subsetFLGAAL8.npz
+- **Mendeley Data:** https://doi.org/10.17632/rrr2p47s8g.1 (includes a README and `feature_names.csv`
+  describing every column)
+- Place the file at `data/final_data_subsetFLGAAL8.npz`
 
-**Place at:** `data/final_data_subsetFLGAAL8.npz`
+### ADBench datasets
 
-### ADBench Datasets
-
-Download the following 27 files from https://github.com/Minqi824/ADBench
-and place them all in `data/adbench/`
+Download the following files from https://github.com/Minqi824/ADBench and place them in
+`data/adbench/`:
 
 ```
-3_backdoor.npz          10_cover.npz            11_donors.npz
-14_glass.npz            17_InternetAds.npz      18_Ionosphere.npz
-19_landsat.npz          20_letter.npz           23_mammography.npz
-24_mnist.npz            25_musk.npz             26_optdigits.npz
-27_PageBlocks.npz       28_pendigits.npz        30_satellite.npz
-31_satimage-2.npz       32_shuttle.npz          35_SpamBase.npz
-36_speech.npz           38_thyroid.npz          40_vowels.npz
-41_Waveform.npz         5_campaign.npz          6_cardio.npz
-7_Cardiotocography.npz  8_celeba.npz            9_census.npz
+3_backdoor.npz   9_census.npz       11_donors.npz    14_glass.npz        15_Hepatitis.npz
+17_InternetAds.npz 18_Ionosphere.npz 19_landsat.npz  20_letter.npz       23_mammography.npz
+24_mnist.npz     25_musk.npz        26_optdigits.npz 27_PageBlocks.npz   28_pendigits.npz
+30_satellite.npz 31_satimage-2.npz  32_shuttle.npz   34_smtp.npz         35_SpamBase.npz
+36_speech.npz    38_thyroid.npz     40_vowels.npz    41_Waveform.npz     5_campaign.npz
+6_cardio.npz     7_Cardiotocography.npz 8_celeba.npz 10_cover.npz
 ```
 
-> **Note:** These are 27 of the 57 datasets available in the ADBench suite.
-> The remaining datasets were excluded due to memory or runtime constraints
-> on methods with O(n²) complexity, or insufficient row count for the
-> evaluation protocol used in this study.
+The scripts skip datasets that do not meet their minimum requirements (Hepatitis: fewer than 100
+rows; smtp in Appendix A: degenerate outlier rate), leaving 27 datasets for each experiment
+(Section 3.2 of the paper). Table 7 was run before `9_census.npz` was added, so to reproduce it
+exactly, run `caldm_ablation_adbench.py` with that file removed from `data/adbench/`.
 
 ---
 
-## Hyperparameters
+## Reproducing the results
 
-All hyperparameters used to produce the paper results are documented in
-`results/hyperparameters/Parameters_Log_ESWApaper.xlsx`.
-
-Key settings used across all CALDM experiments:
-
-| Parameter | Value |
-|---|---|
-| VAE epochs | 15 |
-| Diffusion epochs | 200 |
-| KL weight β | 0.1 (warmed up over first 5 epochs) |
-| Latent dim — numerical | 16 |
-| Latent dim — categorical | 32 |
-| Context dim | 40 |
-| Diffusion timesteps T | 1,000 |
-| Batch size | 256 |
-| Salary loss weight | 2.0 |
-
-For the protocol-consistent BLS benchmark (Table 5) and auto-scaled ADBench
-benchmark (Appendix A), all CALDM hyperparameters were set deterministically
-per dataset using an automated scaling rule (no per-dataset tuning). Full
-details are provided in Appendix A.1 of the paper.
-
----
-
-## Quick Smoke Test
-
-To verify the code runs correctly without a long training job, run the
-following from the repo root. This runs CALDM-D and two baselines on a
-single ADBench dataset with one seed and takes under 5 minutes:
+Run from the repository root. Times are for an RTX 3070 laptop GPU.
 
 ```bash
-python scripts/caldm_benchmark.py \
-  --target adbench \
-  --adbench_dir data/adbench \
-  --methods CALDM-D IForest KNN \
-  --seeds 42 \
-  --output_dir smoke_test \
-  --quick
+# Tables 5 and 6 (BLS ablation, salary-free context) and the rule-based references for Table 4
+# (about 4 hours)
+python scripts/caldm_rerun_salary_free_context.py --data data/final_data_subsetFLGAAL8.npz
+
+# Table 4, CALDM-D and CALDM-J rows (about 1 hour)
+python scripts/caldm_table5_consistent.py --data data/final_data_subsetFLGAAL8.npz
+
+# Table 4, PyOD baseline rows
+python scripts/caldm_benchmark.py --target bls --bls_path data/final_data_subsetFLGAAL8.npz \
+    --bls_subset_pct 0.2 --seeds 69 72 888 --vae_epochs 15 --diff_epochs 200 --vae_max_beta 0.1 \
+    --methods KNN LOF IForest PCA CBLOF HBOS ECOD COPOD LODA DeepSVDD --output_dir results
+
+# Rule-based references for Tables 5 and 6, and the Section 8.4 batch-sensitivity check
+python scripts/caldm_reviewer_checks.py --data data/final_data_subsetFLGAAL8.npz \
+    --diff_epochs 200 --vae_max_beta 0.1
+
+# Section 7.1: earlier context encoder that also received salary
+python -c "import sys; sys.path.insert(0,'scripts'); from caldm_ablation_study_v3 import run_ablation; run_ablation(data_path='data/final_data_subsetFLGAAL8.npz', seeds=[7,42,888,1337,2024], diff_epochs=200, vae_max_beta=0.1, output_dir='results/ablation_v4_paper_settings')"
+
+# Table 7 (ADBench ablation replication, about 6 hours)
+python scripts/caldm_ablation_adbench.py --input_dir data/adbench --out results/ablation_adbench \
+    --seeds 69 72 888
+
+# Section 7.5 dataset-property analysis (seconds, no GPU)
+python scripts/caldm_dataset_property_analysis.py
+
+# Appendix A (ADBench benchmark, about 8 hours)
+python scripts/caldm_benchmark.py --target adbench --adbench_dir data/adbench --seeds 69 72 888 \
+    --vae_epochs 15 --diff_epochs 200 --vae_max_beta 0.1 \
+    --methods KNN LOF IForest PCA CBLOF HBOS ECOD COPOD LODA DeepSVDD CALDM-D CALDM-J \
+    --output_dir results/appendix_a
 ```
+
+Each command writes to its own folder, so existing pre-computed results are only replaced by the
+run that produced them.
 
 ---
 
 ## Citation
 
 ```bibtex
-@article{falck2025caldm,
+@article{falck_caldm,
   title   = {CALDM: A Context-Aware Latent Diffusion Architecture for
              Pay Anomaly Detection in Tabular HR Data},
   author  = {Falck, Juan R. and Islam, Muhammad F.},
   journal = {Expert Systems with Applications},
-  year    = {2025},
   note    = {Under review}
+}
+
+@misc{falck_caldm_data,
+  title  = {Synthetic BLS OEWS Compensation Dataset with Labeled Pay Outliers (FL/AL/GA subset)},
+  author = {Falck, Juan R. and Islam, Muhammad F.},
+  publisher = {Mendeley Data},
+  doi    = {10.17632/rrr2p47s8g.1}
 }
 ```
 
----
-
 ## License
 
-MIT License — see `LICENSE` for details.
+MIT License for the code (see `LICENSE`). The dataset is released under CC BY 4.0 on Mendeley Data.

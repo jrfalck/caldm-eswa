@@ -10,3 +10,8 @@ __pycache__/
 # Environments
 *.env
 deep2-env/
+# Script outputs not used in the paper
+smoke_test/
+benchmark_outputs/
+results/methods_metadata.csv
+results/run_manifest.csv

@@ -1,0 +1,17 @@
+\begin{table}[h]
+\centering
+\caption{CALDM ablation study. Mean $\pm$ std across 5 random seeds. P-values are paired t-tests against the proposed CALDM model.}
+\label{tab:ablation}
+\begin{tabular}{lccccc}
+\toprule
+Configuration & AUC-ROC & AP & F1 & $p_{\text{AUC}}$ & $p_{\text{AP}}$ \\
+\midrule
+VAE only & 0.6154 $\pm$ 0.0205 & 0.1106 $\pm$ 0.0118 & 0.1405 $\pm$ 0.0179 & 0.0009 & 0.0000 \\
+Data-space DDPM & 0.5079 $\pm$ 0.0066 & 0.0758 $\pm$ 0.0015 & 0.0760 $\pm$ 0.0052 & 0.0000 & 0.0000 \\
+Latent Diffusion (unconditional) & 0.7119 $\pm$ 0.0128 & 0.2973 $\pm$ 0.0081 & 0.2798 $\pm$ 0.0015 & 0.0006 & 0.0018 \\
+Context in VAE only & 0.6847 $\pm$ 0.0230 & 0.2085 $\pm$ 0.0133 & 0.2350 $\pm$ 0.0195 & 0.0068 & 0.0000 \\
+CALDM + VAE context & 0.6843 $\pm$ 0.0231 & 0.2086 $\pm$ 0.0135 & 0.2330 $\pm$ 0.0203 & 0.0063 & 0.0000 \\
+CALDM (proposed) & 0.7714 $\pm$ 0.0230 & 0.3399 $\pm$ 0.0066 & 0.2807 $\pm$ 0.0005 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
